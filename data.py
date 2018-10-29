@@ -11,7 +11,7 @@ from params import par
 
 def get_split_info(split, seq_len, overlap):
     assert(overlap < seq_len)
-    img_paths, flow_paths, speeds = [], [], []
+    ids, img_paths, flow_paths, speeds = [], [], [], []
 
     img_fpaths = glob.glob("./data/%s_frames/*.png" % split)
     flow_fpaths = glob.glob("./data/optical_flow/%s_frames/*.npy" % split)
@@ -23,8 +23,9 @@ def get_split_info(split, seq_len, overlap):
     speeds_file.close()
 
     for i in range(0, len(img_fpaths)-seq_len+1, seq_len-overlap):
+        ids.append([i for i in range(i, i+seq_len)])
         img_paths.append(img_fpaths[i:i+seq_len])
-        speeds.append(speed_annotations[i:i+seq_len-1])
+        speeds.append(speed_annotations[i:i+seq_len])
         flow_path_seq = flow_fpaths[i:i+seq_len]
 
         #for last clip in video, reuse last optical flow frame as
@@ -35,9 +36,9 @@ def get_split_info(split, seq_len, overlap):
 
         flow_paths.append(flow_path_seq)
 
-    data = {"seq_len": seq_len, "image_paths": img_paths, "flow_paths": flow_paths,
+    data = {"frame_ids": ids, "image_paths": img_paths, "flow_paths": flow_paths,
         "speeds": speeds}
-    return pd.DataFrame(data, columns=list(data.keys()))
+    return pd.DataFrame(data, columns=list(data.keys())), len(img_fpaths)
 
 
 class RandomBatchSampler(Sampler):
@@ -67,7 +68,7 @@ class RandomBatchSampler(Sampler):
 
 class VideoClipDataset(Dataset):
     def __init__(self, info_dataframe, resize_mode="crop", new_size=None, img_means=None, img_std=(1,1,1), minus_point_5=False):
-        img_ops, flow_ops = [], [NumpyTransposeImage()]
+        img_ops, flow_ops = [], []
 
         if resize_mode == "crop":
             img_ops.append(transforms.CenterCrop((new_size[0], new_size[1])))
@@ -90,16 +91,16 @@ class VideoClipDataset(Dataset):
             self.normalizer = transforms.Normalize(mean=img_means[1], std=img_std)
 
         self.data_info = info_dataframe
-        self.seq_lengths = np.asarray(self.data_info.seq_len)
+        self.frame_ids = np.asarray(self.data_info.frame_ids)
         self.image_arr = np.asarray(self.data_info.image_paths)
         self.flow_arr = np.asarray(self.data_info.flow_paths)
         self.speeds_arr = np.asarray(self.data_info.speeds)
 
     def __getitem__(self, idx):
-        speed_seq = torch.FloatTensor(self.speeds_arr[idx])
+        frame_ids_seq = torch.tensor(self.frame_ids[idx])
         image_path_seq = self.image_arr[idx]
         flow_path_seq = self.flow_arr[idx]
-        seq_len = torch.tensor(int(self.seq_lengths[idx]))
+        speed_seq = torch.FloatTensor(self.speeds_arr[idx])
         image_seq, flow_seq = [], []
 
         if par.use_both or not par.use_optical_flow:
@@ -117,7 +118,6 @@ class VideoClipDataset(Dataset):
         if par.use_both or par.use_optical_flow:
             for flow_path in flow_path_seq:
                 flow = np.load(flow_path)
-                print(np.isnan(flow).any())
                 flow = self.flow_transformer(flow).unsqueeze(0)
                 flow_seq.append(flow)
 
@@ -130,18 +130,10 @@ class VideoClipDataset(Dataset):
         else:
             clip = torch.cat(image_seq, 0)
 
-        return (seq_len, clip, speed_seq)
+        return (frame_ids_seq, clip, speed_seq)
 
     def __len__(self):
         return len(self.data_info.index)
-
-
-class NumpyTransposeImage():
-    def __init__(self):
-        pass
-
-    def __call__(self, arr):
-        return np.swapaxes(arr, 1, 2)
 
 
 class NumpyCenterCrop():

@@ -1,0 +1,39 @@
+Load data info from ./datainfo/train_df_5_4_both.pickle
+Number of samples in training dataset: 16316
+Number of samples in validation dataset: 4076
+
+Moving model to GPU...
+
+Begin training model...
+
+
+Epoch 1 Training Time: 61 minutes 17 seconds
+Mean MSE Loss: 29.241
+
+Epoch 1 Validation Time: 5 minutes 38 seconds
+Mean MSE Loss: 155.900
+
+Save model at epoch 1, mean of valid loss: 155.900
+Save model at epoch 1, mean of train loss: 29.241
+
+Epoch 2 Training Time: 64 minutes 31 seconds
+Mean MSE Loss: 7.148
+
+Epoch 2 Validation Time: 5 minutes 24 seconds
+Mean MSE Loss: 192.062
+
+Save model at epoch 2, mean of train loss: 7.148
+Traceback (most recent call last):
+  File "main.py", line 78, in <module>
+    for batch_num, (_, clip, speeds) in enumerate(train_dl):
+  File "/local-scratch/avest/lib/python3.5/site-packages/torch/utils/data/dataloader.py", line 331, in __next__
+    idx, batch = self._get_batch()
+  File "/local-scratch/avest/lib/python3.5/site-packages/torch/utils/data/dataloader.py", line 310, in _get_batch
+    return self.data_queue.get()
+  File "/rcg/software/Linux/Ubuntu/16.04/amd64/LANG/PYTHON/3.5.2-SYSTEM/lib/python3.5/queue.py", line 164, in get
+    self.not_empty.wait()
+  File "/rcg/software/Linux/Ubuntu/16.04/amd64/LANG/PYTHON/3.5.2-SYSTEM/lib/python3.5/threading.py", line 293, in wait
+    waiter.acquire()
+  File "/local-scratch/avest/lib/python3.5/site-packages/torch/utils/data/dataloader.py", line 228, in handler
+    _error_if_any_worker_fails()
+RuntimeError: DataLoader worker (pid 4292) is killed by signal: Terminated. Details are lost due to multiprocessing. Rerunning with num_workers=0 may give better error trace.

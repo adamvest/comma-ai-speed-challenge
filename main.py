@@ -4,7 +4,8 @@ import torch
 import numpy as np
 import pandas as pd
 from model import DeepVO
-from data_helper import get_split_info, RandomBatchSampler, VideoClipDataset
+from helper import load_weights
+from data import get_split_info, RandomBatchSampler, VideoClipDataset
 from torch.utils.data import DataLoader
 from params import par
 
@@ -15,8 +16,8 @@ if os.path.isfile(par.train_data_info_path) and os.path.isfile(par.valid_data_in
 	val_df = pd.read_pickle(par.valid_data_info_path)
 else:
 	print("Create new data info")
-	train_df = get_split_info("train", par.seq_len, par.overlap)
-	val_df = get_split_info("val", par.seq_len, par.overlap)
+	train_df, _ = get_split_info("train", par.seq_len, par.overlap)
+	val_df, _ = get_split_info("val", par.seq_len, par.overlap)
 	train_df.to_pickle(par.train_data_info_path)
 	val_df.to_pickle(par.valid_data_info_path)
 
@@ -47,23 +48,8 @@ if par.optim["opt"] == "Adam":
 elif par.optim["opt"] == "Adagrad":
 	optimizer = torch.optim.Adagrad(deep_vo.parameters(), lr=par.optim["lr"])
 
-if par.resume:
-	pretrained_dict = torch.load(par.load_model_path)
-
-	if par.load_base_deepvo:
-		model_dict = deep_vo.base_model.state_dict()
-		exclude, strict = [], True
-
-		if par.img_w != 608 or par.img_h != 184:
-			exclude.append("rnn.weight_ih_l0")
-			strict = False
-
-		pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict
-			and k not in exclude}
-		deep_vo.base_model.load_state_dict(pretrained_dict, strict=strict)
-	else:
-		deep_vo.load_state_dict(pretrained_dict)
-
+if par.load_weights:
+	load_weights(deep_vo)
 	print("Loaded weights from: %s\n" % par.load_model_path)
 
 print("Begin training model...\n")
@@ -75,12 +61,12 @@ for epoch in range(par.epochs):
 	deep_vo.train()
 	losses, total_loss = [], 0
 
-	for batch_num, (_, clip, speeds) in enumerate(train_dl):
+	for batch_num, (_, clips, speeds) in enumerate(train_dl):
 		if use_cuda:
-			clip = clip.cuda(non_blocking=par.pin_mem)
+			clips = clips.cuda(non_blocking=par.pin_mem)
 			speeds = speeds.cuda(non_blocking=par.pin_mem)
 
-		loss = deep_vo.step(clip, speeds, optimizer).data.cpu().numpy()
+		loss = deep_vo.step(clips, speeds, optimizer).data.cpu().numpy()
 		losses.append(float(loss))
 		total_loss += float(loss)
 
@@ -99,12 +85,12 @@ for epoch in range(par.epochs):
 	deep_vo.eval()
 	val_losses, total_val_loss = [], 0
 
-	for _, clip, speeds in val_dl:
+	for _, clips, speeds in val_dl:
 		if use_cuda:
-			clip = clip.cuda(non_blocking=par.pin_mem)
+			clips = clips.cuda(non_blocking=par.pin_mem)
 			speeds = speeds.cuda(non_blocking=par.pin_mem)
 
-		val_loss = deep_vo.get_loss(clip, speeds).data.cpu().numpy()
+		val_loss = deep_vo.get_loss(clips, speeds).data.cpu().numpy()
 		val_losses.append(float(val_loss))
 		total_val_loss += float(val_loss)
 

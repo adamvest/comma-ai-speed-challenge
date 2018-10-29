@@ -42,7 +42,7 @@ class DeepVO(nn.Module):
         return out
 
     def get_loss(self, x, y):
-        pred_speeds = self.forward(x).squeeze()
+        pred_speeds = self.predict(x)
         loss = torch.nn.functional.mse_loss(pred_speeds, y)
         return loss
 
@@ -56,6 +56,9 @@ class DeepVO(nn.Module):
 
         optimizer.step()
         return loss
+
+    def predict(self, x):
+        return self.forward(x).squeeze()
 
 
 class BaseDeepVO(nn.Module):
@@ -114,9 +117,7 @@ class BaseDeepVO(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        # x: (batch, seq_len, num_channels, width, height)
-        # stack images -> x: (batch, seq_len-1, 2*num_channels, width, height)
-        x = torch.cat((x[:, :-1], x[:, 1:]), dim=2)
+        x = self.stack_frames(x)
         batch_size = x.size(0)
         seq_len = x.size(1)
 
@@ -135,3 +136,24 @@ class BaseDeepVO(nn.Module):
         out_conv5 = self.conv5_1(self.conv5(out_conv4))
         out_conv6 = self.conv6(out_conv5)
         return out_conv6
+
+    def stack_frames(self, x):
+        if par.use_three_frames:
+            seq_list = []
+
+            for frame_seq in x:
+                frames_list = (frame_seq[0], frame_seq[0], frame_seq[1])
+                stacked_frames_list = [torch.cat(frames_list, dim=0).unsqueeze(0)]
+
+                for i in range(1, len(frame_seq) - 1):
+                    frames_list = (frame_seq[i-1], frame_seq[i], frame_seq[i+1])
+                    stacked_frames_list.append(torch.cat(frames_list, dim=0).unsqueeze(0))
+
+                frames_list = (frame_seq[-2], frame_seq[-1], frame_seq[-1])
+                stacked_frames_list.append(torch.cat(frames_list, dim=0).unsqueeze(0))
+                seq_list.append(torch.cat(stacked_frames_list, dim=0).unsqueeze(0))
+
+            return torch.cat(seq_list, dim=0)
+        else:
+            x = torch.cat((x[:, :-1], x[:, 1:]), dim=2)
+            return torch.cat((x, x[:, -1].unsqueeze(1)), dim=1)

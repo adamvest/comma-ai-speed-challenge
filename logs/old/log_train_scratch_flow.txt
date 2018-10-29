@@ -1,0 +1,120 @@
+Load data info from ./datainfo/train_df_5_4_flow.pickle
+Number of samples in training dataset: 16316
+Number of samples in validation dataset: 4076
+
+Moving model to GPU...
+
+Begin training model...
+
+
+Epoch 1 Training Time: 39 minutes 36 seconds
+Mean MSE Loss: 41.111
+
+Epoch 1 Validation Time: 4 minutes 14 seconds
+Mean MSE Loss: 73.950
+
+Save model at epoch 1, mean of valid loss: 73.950
+Save model at epoch 1, mean of train loss: 41.111
+
+Epoch 2 Training Time: 34 minutes 52 seconds
+Mean MSE Loss: 17.410
+
+Epoch 2 Validation Time: 4 minutes 15 seconds
+Mean MSE Loss: 68.445
+
+Save model at epoch 2, mean of valid loss: 68.445
+Save model at epoch 2, mean of train loss: 17.410
+
+Epoch 3 Training Time: 35 minutes 5 seconds
+Mean MSE Loss: 12.148
+
+Epoch 3 Validation Time: 4 minutes 15 seconds
+Mean MSE Loss: 70.526
+
+Save model at epoch 3, mean of train loss: 12.148
+
+Epoch 4 Training Time: 34 minutes 4 seconds
+Mean MSE Loss: 9.236
+
+Epoch 4 Validation Time: 4 minutes 25 seconds
+Mean MSE Loss: 74.927
+
+Save model at epoch 4, mean of train loss: 9.236
+
+Epoch 5 Training Time: 34 minutes 38 seconds
+Mean MSE Loss: 7.451
+
+Epoch 5 Validation Time: 4 minutes 13 seconds
+Mean MSE Loss: 78.033
+
+Save model at epoch 5, mean of train loss: 7.451
+
+Epoch 6 Training Time: 33 minutes 8 seconds
+Mean MSE Loss: 6.267
+
+Epoch 6 Validation Time: 4 minutes 18 seconds
+Mean MSE Loss: 74.771
+
+Save model at epoch 6, mean of train loss: 6.267
+
+Epoch 7 Training Time: 32 minutes 46 seconds
+Mean MSE Loss: 5.537
+
+Epoch 7 Validation Time: 4 minutes 15 seconds
+Mean MSE Loss: 82.714
+
+Save model at epoch 7, mean of train loss: 5.537
+
+Epoch 8 Training Time: 32 minutes 37 seconds
+Mean MSE Loss: 4.992
+
+Epoch 8 Validation Time: 4 minutes 12 seconds
+Mean MSE Loss: 80.386
+
+Save model at epoch 8, mean of train loss: 4.992
+
+Epoch 9 Training Time: 32 minutes 17 seconds
+Mean MSE Loss: 4.467
+
+Epoch 9 Validation Time: 4 minutes 12 seconds
+Mean MSE Loss: 83.241
+
+Save model at epoch 9, mean of train loss: 4.467
+
+Epoch 10 Training Time: 32 minutes 37 seconds
+Mean MSE Loss: 4.130
+
+Epoch 10 Validation Time: 4 minutes 29 seconds
+Mean MSE Loss: 83.651
+
+Save model at epoch 10, mean of train loss: 4.130
+
+Epoch 11 Training Time: 35 minutes 57 seconds
+Mean MSE Loss: 3.920
+
+Epoch 11 Validation Time: 5 minutes 1 seconds
+Mean MSE Loss: 79.165
+
+Save model at epoch 11, mean of train loss: 3.920
+
+Epoch 12 Training Time: 34 minutes 36 seconds
+Mean MSE Loss: 3.586
+
+Epoch 12 Validation Time: 4 minutes 50 seconds
+Mean MSE Loss: 79.273
+
+Save model at epoch 12, mean of train loss: 3.586
+Traceback (most recent call last):
+  File "main.py", line 78, in <module>
+    for batch_num, (_, clip, speeds) in enumerate(train_dl):
+  File "/local-scratch/avest/lib/python3.5/site-packages/torch/utils/data/dataloader.py", line 331, in __next__
+    idx, batch = self._get_batch()
+  File "/local-scratch/avest/lib/python3.5/site-packages/torch/utils/data/dataloader.py", line 310, in _get_batch
+    return self.data_queue.get()
+  File "/rcg/software/Linux/Ubuntu/16.04/amd64/LANG/PYTHON/3.5.2-SYSTEM/lib/python3.5/queue.py", line 164, in get
+    self.not_empty.wait()
+  File "/rcg/software/Linux/Ubuntu/16.04/amd64/LANG/PYTHON/3.5.2-SYSTEM/lib/python3.5/threading.py", line 293, in wait
+    waiter.acquire()
+  File "/local-scratch/avest/lib/python3.5/site-packages/torch/utils/data/dataloader.py", line 228, in handler
+    _error_if_any_worker_fails()
+RuntimeError: DataLoader worker (pid 5106) is killed by signal: Terminated. Details are lost due to multiprocessing. Rerunning with num_workers=0 may give better error trace.
