@@ -46,7 +46,9 @@ class Parameters():
 			% (self.seq_len, self.overlap, frames, input)
 
 		#model
-		self.model = "deepvo" #conv3d
+		self.model = "resnet3d" #deepvo
+		self.resnet_depth = 34 # 18
+		self.linear_size = 1024
 		self.rnn_hidden_size = 1000
 		self.conv_dropout = (0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.5)
 		self.rnn_dropout_out = 0.5
@@ -79,8 +81,10 @@ class Parameters():
 			else:
 				base = "speeds"
 
+		model = self.model if self.model == "deepvo" else self.model + "_%d" % self.resnet_depth
+
 		self.save_model_path = "./models/%s_%s_%d_%d_%d_%s.model" \
-			% (self.model, base, self.seq_len, self.overlap, frames, input)
+			% (model, base, self.seq_len, self.overlap, frames, input)
 
 		if not os.path.isdir(os.path.dirname(self.save_model_path)):
 			os.makedirs(os.path.dirname(self.save_model_path))

@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from params import par
 
 
+#load dataset
 split = "val" if par.evaluate_val else "test"
 test_df, num_frames = get_split_info(split, par.seq_len, par.overlap)
 test_dataset = VideoClipDataset(test_df, par.resize_mode, (par.img_w, par.img_h),
@@ -18,12 +19,20 @@ test_dl = DataLoader(test_dataset, batch_size=1, num_workers=par.n_processors,
 
 print("Number of samples in test dataset: %d\n" % len(test_df.index))
 
+#create model
 if par.model == "deepvo":
     model = DeepVO(par.img_h, par.img_w, par.batch_norm)
-elif par.model == "conv3d":
-    model =
+elif par.model == "resnet3d":
+	if par.resnet_depth == 18:
+		num_blocks = [2, 2, 2, 2]
+	elif par.resnet_depth == 34:
+		num_blocks = [3, 4, 6, 3]
+	else:
+		raise NotImplementedError("Invalid choice of Resnet depth!")
+
+	model = ResNet3D(num_blocks)
 else:
-    raise ValueError("Invalid model selected")
+    raise NotImplementedError("Invalid model selected!")
 
 use_cuda = torch.cuda.is_available()
 
@@ -43,6 +52,7 @@ pred_counts = torch.zeros(num_frames, dtype=torch.float32)
 total_time = 0.0
 model.eval()
 
+#process clips
 for frame_ids, clip, _ in test_dl:
     if use_cuda:
         clip = clip.cuda(non_blocking=par.pin_mem)
@@ -52,15 +62,19 @@ for frame_ids, clip, _ in test_dl:
     predicted_speeds = model.predict(clip).data.cpu()
     total_time += time.time() - start_time
 
+    #update prediction averages based on frame ids
     for i in range(len(frame_ids)):
         running_pred_sums[frame_ids[i]] += predicted_speeds[i]
         pred_counts[frame_ids[i]] += 1
 
 avg_preds = running_pred_sums / pred_counts
 
+#calcuate evaluation metrics
 if split == "val":
     mse = evaluate_predictions(avg_preds, split)
     print("Average Prediction Time: %.4f" % (total_time / len(test_dl)))
     print("Mean Square Error: %.4f" % float(mse))
+
+#write test predictions to file
 else:
     write_predictions(avg_preds, split)
