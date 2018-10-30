@@ -62,7 +62,7 @@ class Parameters():
 		#training
 		self.batch_updates = False
 		self.epochs = 10
-		self.batch_size = 4
+		self.batch_size = 2
 		self.pin_mem = True
 		self.optim = {"opt": "Adagrad", "lr": 0.0005} # {"opt": "Adam"}
 
