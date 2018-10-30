@@ -16,14 +16,14 @@ def write_predictions(preds, split_name):
             f.write(str(pred) + "\n")
 
 
-def load_weights(deep_vo):
+def load_weights(model):
     pretrained_dict = torch.load(par.load_model_path)
 
-    if par.load_base_deepvo:
+    if par.model == "deepvo" and par.load_base_deepvo:
         if par.use_optical_flow or par.use_both:
             raise ValueError("Pretrained DeepVO cannot handle optical flow!")
 
-        model_dict = deep_vo.base_model.state_dict()
+        model_dict = model.base_model.state_dict()
         exclude, strict = [], True
 
         if par.load_conv_only:
@@ -37,7 +37,7 @@ def load_weights(deep_vo):
             exclude.append("conv1")
             strict = False
 
-        if strict == False:
+        if strict == True:
             filtered_dict = {k: v for k, v in pretrained_dict.items()
                 if k in model_dict}
         else:
@@ -53,8 +53,8 @@ def load_weights(deep_vo):
                             break
 
                 if not excluded:
-                    filtered_dict[k] == v
+                    filtered_dict[k] = v
 
-        deep_vo.base_model.load_state_dict(filtered_dict, strict=strict)
+        model.base_model.load_state_dict(filtered_dict, strict=strict)
     else:
-        deep_vo.load_state_dict(pretrained_dict)
+        model.load_state_dict(pretrained_dict)

@@ -1,0 +1,68 @@
+Create new data info
+Number of samples in training dataset: 5437
+Number of samples in validation dataset: 1357
+
+Moving model to GPU...
+
+Begin training model...
+
+
+Epoch 1 Training Time: 31 minutes 41 seconds
+Mean MSE Loss: 50.569
+
+Epoch 1 Validation Time: 3 minutes 56 seconds
+Mean MSE Loss: 96.951
+
+Save model at epoch 1, mean of valid loss: 96.951
+Save model at epoch 1, mean of train loss: 50.569
+
+Epoch 2 Training Time: 27 minutes 56 seconds
+Mean MSE Loss: 21.480
+
+Epoch 2 Validation Time: 4 minutes 1 seconds
+Mean MSE Loss: 82.159
+
+Save model at epoch 2, mean of valid loss: 82.159
+Save model at epoch 2, mean of train loss: 21.480
+
+Epoch 3 Training Time: 28 minutes 8 seconds
+Mean MSE Loss: 14.443
+
+Epoch 3 Validation Time: 3 minutes 54 seconds
+Mean MSE Loss: 80.469
+
+Save model at epoch 3, mean of valid loss: 80.469
+Save model at epoch 3, mean of train loss: 14.443
+
+Epoch 4 Training Time: 27 minutes 45 seconds
+Mean MSE Loss: 10.966
+
+Epoch 4 Validation Time: 4 minutes 0 seconds
+Mean MSE Loss: 69.781
+
+Save model at epoch 4, mean of valid loss: 69.781
+Save model at epoch 4, mean of train loss: 10.966
+
+Epoch 5 Training Time: 28 minutes 10 seconds
+Mean MSE Loss: 8.558
+
+Epoch 5 Validation Time: 3 minutes 57 seconds
+Mean MSE Loss: 74.932
+
+Save model at epoch 5, mean of train loss: 8.558
+
+Epoch 6 Training Time: 27 minutes 32 seconds
+Mean MSE Loss: 7.115
+
+Epoch 6 Validation Time: 3 minutes 56 seconds
+Mean MSE Loss: 73.129
+
+Save model at epoch 6, mean of train loss: 7.115
+
+Epoch 7 Training Time: 27 minutes 28 seconds
+Mean MSE Loss: 5.957
+
+Epoch 7 Validation Time: 4 minutes 2 seconds
+Mean MSE Loss: 78.158
+
+Save model at epoch 7, mean of train loss: 5.957

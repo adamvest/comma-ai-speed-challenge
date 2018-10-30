@@ -18,24 +18,30 @@ test_dl = DataLoader(test_dataset, batch_size=1, num_workers=par.n_processors,
 
 print("Number of samples in test dataset: %d\n" % len(test_df.index))
 
-deep_vo = DeepVO(par.img_h, par.img_w, par.batch_norm)
+if par.model == "deepvo":
+    model = DeepVO(par.img_h, par.img_w, par.batch_norm)
+elif par.model == "conv3d":
+    model =
+else:
+    raise ValueError("Invalid model selected")
+
 use_cuda = torch.cuda.is_available()
 
 if use_cuda:
     print("Moving model to GPU...\n")
-    deep_vo = deep_vo.cuda()
+    model = model.cuda()
 
 if not par.load_weights or not os.path.isfile(par.load_model_path):
 	raise ValueError("Pretrained weights not provided!")
 else:
-    deep_vo.load_state_dict(torch.load(par.load_model_path))
+    model.load_state_dict(torch.load(par.load_model_path))
 
 print("Begin evaluating model...\n")
 
 running_pred_sums = torch.zeros(num_frames, dtype=torch.float32)
 pred_counts = torch.zeros(num_frames, dtype=torch.float32)
 total_time = 0.0
-deep_vo.eval()
+model.eval()
 
 for frame_ids, clip, _ in test_dl:
     if use_cuda:
@@ -43,7 +49,7 @@ for frame_ids, clip, _ in test_dl:
 
     frame_ids = frame_ids.squeeze()
     start_time = time.time()
-    predicted_speeds = deep_vo.predict(clip).data.cpu()
+    predicted_speeds = model.predict(clip).data.cpu()
     total_time += time.time() - start_time
 
     for i in range(len(frame_ids)):

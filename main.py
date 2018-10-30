@@ -36,20 +36,24 @@ val_dl = DataLoader(val_dataset, batch_sampler=val_sampler,
 print("Number of samples in training dataset: %d" % len(train_df.index))
 print("Number of samples in validation dataset: %d\n" % len(val_df.index))
 
-deep_vo = DeepVO(par.img_h, par.img_w, par.batch_norm)
-use_cuda = torch.cuda.is_available()
+if par.model == "deepvo":
+    model = DeepVO(par.img_h, par.img_w, par.batch_norm)
+elif par.model == "conv3d":
+    model = ConvNet(par.img_h, par.img_w, par.batch_norm)
+else:
+    raise ValueError("Invalid model selecteuse_cuda = torch.cuda.is_available()
 
 if use_cuda:
     print("Moving model to GPU...\n")
-    deep_vo = deep_vo.cuda()
+    model = model.cuda()
 
 if par.optim["opt"] == "Adam":
-	optimizer = torch.optim.Adam(deep_vo.parameters(), lr=0.001, betas=(0.9, 0.999))
+	optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999))
 elif par.optim["opt"] == "Adagrad":
-	optimizer = torch.optim.Adagrad(deep_vo.parameters(), lr=par.optim["lr"])
+	optimizer = torch.optim.Adagrad(model.parameters(), lr=par.optim["lr"])
 
 if par.load_weights:
-	load_weights(deep_vo)
+	load_weights(model)
 	print("Loaded weights from: %s\n" % par.load_model_path)
 
 print("Begin training model...\n")
@@ -58,7 +62,7 @@ min_train_loss, min_val_loss = np.inf, np.inf
 
 for epoch in range(par.epochs):
 	start_time = time.time()
-	deep_vo.train()
+	model.train()
 	losses, total_loss = [], 0
 
 	for batch_num, (_, clips, speeds) in enumerate(train_dl):
@@ -66,7 +70,7 @@ for epoch in range(par.epochs):
 			clips = clips.cuda(non_blocking=par.pin_mem)
 			speeds = speeds.cuda(non_blocking=par.pin_mem)
 
-		loss = deep_vo.step(clips, speeds, optimizer).data.cpu().numpy()
+		loss = model.step(clips, speeds, optimizer).data.cpu().numpy()
 		losses.append(float(loss))
 		total_loss += float(loss)
 
@@ -82,7 +86,7 @@ for epoch in range(par.epochs):
 	print("Mean MSE Loss: %.3f\n" % loss_mean)
 
 	start_time = time.time()
-	deep_vo.eval()
+	model.eval()
 	val_losses, total_val_loss = [], 0
 
 	for _, clips, speeds in val_dl:
@@ -90,7 +94,7 @@ for epoch in range(par.epochs):
 			clips = clips.cuda(non_blocking=par.pin_mem)
 			speeds = speeds.cuda(non_blocking=par.pin_mem)
 
-		val_loss = deep_vo.get_loss(clips, speeds).data.cpu().numpy()
+		val_loss = model.get_loss(clips, speeds).data.cpu().numpy()
 		val_losses.append(float(val_loss))
 		total_val_loss += float(val_loss)
 
@@ -105,9 +109,9 @@ for epoch in range(par.epochs):
 	if val_loss_mean < min_val_loss and epoch % par.check_interval == 0:
 		min_val_loss = val_loss_mean
 		print("Save model at epoch %d, mean of valid loss: %.3f" % (epoch + 1, val_loss_mean))
-		torch.save(deep_vo.state_dict(), par.save_model_path + ".val_%d" % epoch)
+		torch.save(model.state_dict(), par.save_model_path + ".val_%d" % epoch)
 
 	if loss_mean < min_train_loss and epoch % par.check_interval == 0:
 		min_train_loss = loss_mean
 		print("Save model at epoch %d, mean of train loss: %.3f" % (epoch + 1, loss_mean))
-		torch.save(deep_vo.state_dict(), par.save_model_path + ".train_%d" % epoch)
+		torch.save(model.state_dict(), par.save_model_path + ".train_%d" % epoch)

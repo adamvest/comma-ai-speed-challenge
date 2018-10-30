@@ -6,8 +6,8 @@ class Parameters():
 		self.n_processors = 8
 
 		#frame setup
-		self.seq_len = 5
-		self.overlap = 4
+		self.seq_len = 10
+		self.overlap = 7
 		self.check_interval = 1
 		self.use_optical_flow = True
 		self.use_both = False
@@ -46,6 +46,7 @@ class Parameters():
 			% (self.seq_len, self.overlap, frames, input)
 
 		#model
+		self.model = "deepvo" #conv3d
 		self.rnn_hidden_size = 1000
 		self.conv_dropout = (0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.5)
 		self.rnn_dropout_out = 0.5
@@ -55,8 +56,8 @@ class Parameters():
 
 		#training
 		self.batch_updates = False
-		self.epochs = 20
-		self.batch_size = 4
+		self.epochs = 10
+		self.batch_size = 2
 		self.pin_mem = True
 		self.optim = {"opt": "Adagrad", "lr": 0.0005} # {"opt": "Adam"}
 
@@ -64,8 +65,7 @@ class Parameters():
 		self.load_weights = False
 		self.load_base_deepvo = False
 		self.load_conv_only = False
-		self.pretrained_flownet = None
-		self.load_model_path = "./models/t000102050809_v04060710_im184x608_s5x7_b8_rnn1000_optAdagrad_lr0.0005.model.valid"
+		self.load_model_path = "./models/speeds_from_scratch_5_4_3_flow.model.val_0"
 
 		#testing
 		self.evaluate_val = True
@@ -79,12 +79,9 @@ class Parameters():
 			else:
 				base = "speeds"
 
-		self.record_path = "./logs/speeds_finetuned_from_train.txt"
-		self.save_model_path = "./models/speeds_from_%s_%d_%d_%d_%s.model" \
-			% (base, self.seq_len, self.overlap, frames, input)
+		self.save_model_path = "./models/%s_%s_%d_%d_%d_%s.model" \
+			% (self.model, base, self.seq_len, self.overlap, frames, input)
 
-		if not os.path.isdir(os.path.dirname(self.record_path)):
-			os.makedirs(os.path.dirname(self.record_path))
 		if not os.path.isdir(os.path.dirname(self.save_model_path)):
 			os.makedirs(os.path.dirname(self.save_model_path))
 		if not os.path.isdir(os.path.dirname(self.train_data_info_path)):
