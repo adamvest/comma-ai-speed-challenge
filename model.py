@@ -97,13 +97,10 @@ class ResNet3D(nn.Module):
         linear_input_size = int(np.prod(self._extract_features(tmp).size()))
 
         self.linear = nn.Sequential(
-                nn.Linear(linear_input_size, par.linear_size1),
-                nn.BatchNorm1d(par.linear_size1),
+                nn.Linear(linear_input_size, par.linear_size),
+                nn.BatchNorm1d(par.linear_size),
                 nn.ReLU(inplace=True),
-                nn.Linear(par.linear_size1, par.linear_size2),
-                nn.BatchNorm1d(par.linear_size2),
-                nn.ReLU(inplace=True),
-                nn.Linear(par.linear_size2, par.seq_len)
+                nn.Linear(par.linear_size, par.seq_len)
             )
 
         initialize_weights(self)

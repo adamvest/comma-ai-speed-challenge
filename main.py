@@ -52,8 +52,7 @@ elif par.model == "resnet3d":
 else:
     raise NotImplementedError("Invalid model selected!")
 
-# use_cuda = torch.cuda.is_available()
-use_cuda = False
+use_cuda = torch.cuda.is_available()
 
 if use_cuda:
     print("Moving model to GPU...\n")

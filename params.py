@@ -41,8 +41,7 @@ class Parameters():
 		#model
 		self.model = "resnet3d" #deepvo
 		self.resnet_depth = 34 # 18
-		self.linear_size1 = 4096
-		self.linear_size2 = 512
+		self.linear_size = 2048
 		self.rnn_hidden_size = 1000
 		self.conv_dropout = (0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.5)
 		self.rnn_dropout_out = 0.5
@@ -61,17 +60,17 @@ class Parameters():
 			self.num_channels = 3 * mult
 
 		#training
-		self.batch_updates = True
+		self.batch_updates = False
 		self.epochs = 10
-		self.batch_size = 2
+		self.batch_size = 4
 		self.pin_mem = True
 		self.optim = {"opt": "Adagrad", "lr": 0.0005} # {"opt": "Adam"}
 
 		#load weights
-		self.load_weights = False
+		self.load_weights = True
 		self.load_base_deepvo = False
 		self.load_conv_only = False
-		self.load_model_path = "./models/speeds_from_scratch_5_4_3_flow.model.val_0"
+		self.load_model_path = "./models/resnet3d_34_scratch_5_4_2_flow.model.train_0"
 
 		#testing
 		self.evaluate_val = True
