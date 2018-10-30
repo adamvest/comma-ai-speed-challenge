@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from helper import initialize_weights
 from torch.autograd import Variable
 from torch.nn.init import kaiming_normal_, orthogonal_
 from params import par
@@ -100,10 +101,12 @@ class ResNet3D(nn.Module):
                 nn.BatchNorm1d(par.linear_size1),
                 nn.ReLU(inplace=True),
                 nn.Linear(par.linear_size1, par.linear_size2),
-                nn.BatchNorm2d(par.linear_size2),
+                nn.BatchNorm1d(par.linear_size2),
                 nn.ReLU(inplace=True),
                 nn.Linear(par.linear_size2, par.seq_len)
             )
+
+        initialize_weights(self)
 
     def forward(self, x):
         base_features = self._extract_features(x)

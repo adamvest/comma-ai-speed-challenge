@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 from params import par
 
 def evaluate_predictions(preds, split_name):
@@ -14,6 +15,19 @@ def write_predictions(preds, split_name):
     with open("./data/%s.txt" % split_name, "w") as preds_file:
         for pred in preds:
             f.write(str(pred) + "\n")
+
+
+def initialize_weights(resnet):
+    for m in resnet.modules():
+        if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear):
+            nn.init.kaiming_normal_(m.weight.data)
+
+            if m.bias is not None:
+                m.bias.data.zero_()
+
+        elif isinstance(m, nn.BatchNorm3d) or isinstance(m, nn.BatchNorm1d):
+            m.weight.data.fill_(1)
+            m.bias.data.zero_()
 
 
 def load_weights(model):
