@@ -6,24 +6,17 @@ class Parameters():
 		self.n_processors = 8
 
 		#frame setup
-		self.seq_len = 10
-		self.overlap = 7
+		self.seq_len = 5
+		self.overlap = 4
 		self.check_interval = 1
 		self.use_optical_flow = True
 		self.use_both = False
-		self.use_three_frames = True
+		self.use_three_frames = False
 		frames = 3 if self.use_three_frames else 2
-
-		if self.use_both:
-			self.num_channels = 5 * frames
-		elif self.use_optical_flow:
-			self.num_channels = 2 * frames
-		else:
-			self.num_channels = 3 * frames
 
 		#preprocessing
 		self.resize_mode = "crop" # "crop", "rescale", or None
-		self.img_w = 640  # 608
+		self.img_w = 600  # 608
 		self.img_h = 380  # 184
 		self.img_means = [(-0.25843116, -0.21177726, -0.16270572),
 			(0.24156884, 0.28822274, 0.33729428)]
@@ -48,7 +41,8 @@ class Parameters():
 		#model
 		self.model = "resnet3d" #deepvo
 		self.resnet_depth = 34 # 18
-		self.linear_size = 1024
+		self.linear_size1 = 4096
+		self.linear_size2 = 512
 		self.rnn_hidden_size = 1000
 		self.conv_dropout = (0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.5)
 		self.rnn_dropout_out = 0.5
@@ -56,8 +50,18 @@ class Parameters():
 		self.clip = None
 		self.batch_norm = True
 
+		#number of channels
+		mult = frames if self.model == "deepvo" else 1
+
+		if self.use_both:
+			self.num_channels = 5 * mult
+		elif self.use_optical_flow:
+			self.num_channels = 2 * mult
+		else:
+			self.num_channels = 3 * mult
+
 		#training
-		self.batch_updates = False
+		self.batch_updates = True
 		self.epochs = 10
 		self.batch_size = 2
 		self.pin_mem = True

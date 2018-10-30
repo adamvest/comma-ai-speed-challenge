@@ -42,11 +42,11 @@ class ResidualGroup(nn.Module):
                 nn.BatchNorm3d(out_feature_maps)
             )
             self.learned_residual_connection = nn.Sequential(
-                    nn.Conv3d(in_feature_maps, out_feature_maps, kernel_size=1, stride=(1, 2, 2)),
+                    nn.Conv3d(in_feature_maps, out_feature_maps, kernel_size=1, stride=(1, 2, 2), padding=(1, 1, 1)),
                     nn.BatchNorm3d(out_feature_maps)
                 )
         else:
-            self.initial_block = ResidualBlock(out_features_maps)
+            self.initial_block = ResidualBlock(out_feature_maps)
             self.learned_residual_connection = None
 
         layers = []
@@ -57,9 +57,12 @@ class ResidualGroup(nn.Module):
         self.base = nn.Sequential(*layers)
 
     def forward(self, x):
-        residual = self.learned_residual_connection(x)
         out = self.initial_block(x)
-        out = self.relu(residual + out)
+
+        if self.learned_residual_connection != None:
+            residual = self.learned_residual_connection(x)
+            out = self.relu(residual + out)
+
         return self.base(out)
 
 
@@ -68,14 +71,12 @@ class ResNet3D(nn.Module):
         super(ResNet3D, self).__init__()
         assert(len(num_blocks) == 4)
 
-        self.initial_conv = nn.Sequential(
-                nn.Conv3d(par.num_channels, 64, kernel_size=7, stride=(1, 2, 2), padding=(3, 3, 3)),
+        layers = [nn.Sequential(
+                nn.Conv3d(par.num_channels, 64, kernel_size=(par.seq_len, 7, 7), stride=(1, 2, 2), padding=3),
                 nn.BatchNorm3d(64),
                 nn.ReLU(inplace=True),
                 nn.MaxPool3d(kernel_size=(3, 3, 3), stride=2, padding=1)
-            )
-
-        self.residual_layers = []
+            )]
 
         for i in range(len(num_blocks)):
             in_feature_maps, out_feature_maps, downsample = 2 ** (i + 5), 2 ** (i + 6), True
@@ -84,51 +85,33 @@ class ResNet3D(nn.Module):
                 in_feature_maps = 64
                 downsample = False
 
-            self.residual_layers.append(ResidualGroup(num_blocks[i], in_feature_maps,
-                out_feature_maps, downsample))
+            layers.append(ResidualGroup(num_blocks[i], in_feature_maps, out_feature_maps,
+                downsample))
+
+        layers.append(nn.AvgPool3d(kernel_size=(3, 3, 3), stride=2, padding=1))
+        self.feature_extractor = nn.Sequential(*layers)
 
         #compute CNN feature extrator output shape
-        tmp = Variable(torch.zeros(1, par.num_channels, par.img_h, par.img_w))
+        tmp = Variable(torch.zeros(1, par.num_channels, par.seq_len, par.img_h, par.img_w))
         linear_input_size = int(np.prod(self._extract_features(tmp).size()))
 
         self.linear = nn.Sequential(
-                nn.Linear(linear_input_size, par.linear_size),
-                nn.BatchNorm1d(par.linear_size),
+                nn.Linear(linear_input_size, par.linear_size1),
+                nn.BatchNorm1d(par.linear_size1),
                 nn.ReLU(inplace=True),
-                nn.Linear(par.linear_size, par.seq_len)
-            )
-
-
-    def _create_residual_blocks(self, num_blocks, in_feature_maps, out_feature_maps, downsample):
-        if downsample:
-            initial_block = nn.Sequential(
-                nn.Conv3d(in_feature_maps, out_feature_maps, kernel_size=3, stride=(1, 2, 2), padding=(2, 2, 2)),
-                nn.BatchNorm3d(out_feature_maps),
+                nn.Linear(par.linear_size1, par.linear_size2),
+                nn.BatchNorm2d(par.linear_size2),
                 nn.ReLU(inplace=True),
-                nn.MaxPool3d(kernel_size=(3, 3, 3), stride=2, padding=1)
+                nn.Linear(par.linear_size2, par.seq_len)
             )
-        else:
-            initial_block = ResidualBlock(out_features_maps)
-
-        layers = [initial_block]
-
-        for i in range(1, num_blocks):
-            layers.append(ResidualBlock(out_feature_maps))
-
-        return nn.Sequential(*layers)
 
     def forward(self, x):
         base_features = self._extract_features(x)
-        base_features = base_features.view(batch_size, -1)
+        base_features = base_features.view(base_features.size(0), -1)
         return self.linear(base_features)
 
     def _extract_features(self, x):
-        out = self.initial_conv(x)
-
-        for layers in self.residual_layers:
-            out = layers(out)
-
-        return out
+        return self.feature_extractor(x)
 
     def get_loss(self, x, y):
         pred_speeds = self.predict(x)

@@ -3,7 +3,7 @@ import time
 import torch
 import numpy as np
 import pandas as pd
-from model import DeepVO
+from model import ResNet3D, DeepVO
 from helper import load_weights
 from data import get_split_info, RandomBatchSampler, VideoClipDataset
 from torch.utils.data import DataLoader
@@ -51,9 +51,6 @@ elif par.model == "resnet3d":
 	model = ResNet3D(num_blocks)
 else:
     raise NotImplementedError("Invalid model selected!")
-
-print(model)
-input("stop")
 
 use_cuda = torch.cuda.is_available()
 

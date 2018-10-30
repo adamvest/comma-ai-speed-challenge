@@ -130,6 +130,9 @@ class VideoClipDataset(Dataset):
         else:
             clip = torch.cat(image_seq, 0)
 
+        if par.model == "resnet3d":
+            clip = clip.permute(1, 0, 2, 3)
+
         return (frame_ids_seq, clip, speed_seq)
 
     def __len__(self):
