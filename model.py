@@ -73,7 +73,7 @@ class ResNet3D(nn.Module):
         assert(len(num_blocks) == 4)
 
         layers = [nn.Sequential(
-                nn.Conv3d(par.num_channels, 64, kernel_size=(par.seq_len, 7, 7), stride=(1, 2, 2), padding=3),
+                nn.Conv3d(par.num_channels, 64, kernel_size=(7, 7, 7), stride=(1, 2, 2), padding=3),
                 nn.BatchNorm3d(64),
                 nn.ReLU(inplace=True),
                 nn.MaxPool3d(kernel_size=(3, 3, 3), stride=2, padding=1)
@@ -115,7 +115,7 @@ class ResNet3D(nn.Module):
 
     def get_loss(self, x, y):
         pred_speeds = self.predict(x)
-        loss = torch.nn.functional.mse_loss(pred_speeds, y)
+        loss = torch.nn.functional.mse_loss(pred_speeds, y.squeeze())
         return loss
 
     def step(self, x, y, optimizer):

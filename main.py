@@ -58,10 +58,10 @@ if use_cuda:
     print("Moving model to GPU...\n")
     model = model.cuda()
 
-if par.optim["opt"] == "Adam":
-	optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999))
-elif par.optim["opt"] == "Adagrad":
-	optimizer = torch.optim.Adagrad(model.parameters(), lr=par.optim["lr"])
+if par.optim == "Adam":
+	optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999))
+elif par.optim == "Adagrad":
+	optimizer = torch.optim.Adagrad(model.parameters(), lr=.0001)
 
 if par.load_weights:
 	load_weights(model)

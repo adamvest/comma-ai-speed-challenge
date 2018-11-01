@@ -15,8 +15,8 @@ def get_split_info(split, seq_len, overlap):
 
     img_fpaths = glob.glob("./data/%s_frames/*.png" % split)
     flow_fpaths = glob.glob("./data/optical_flow/%s_frames/*.npy" % split)
-    img_fpaths.sort()
-    flow_fpaths.sort()
+    img_fpaths.sort(key=lambda x: int(x.split("/")[-1].split(".")[0].split("_")[-1]))
+    flow_fpaths.sort(key=lambda x: int(x.split("/")[-1].split(".")[0].split("_")[-1]))
     speeds_file = open("./data/%s.txt" % split)
     speed_annotations = speeds_file.readlines()
     speed_annotations = [float(val) for val in speed_annotations]

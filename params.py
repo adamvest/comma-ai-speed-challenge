@@ -41,7 +41,7 @@ class Parameters():
 		#model
 		self.model = "resnet3d" #deepvo
 		self.resnet_depth = 34 # 18
-		self.linear_size = 2048
+		self.linear_size = 1024
 		self.rnn_hidden_size = 1000
 		self.conv_dropout = (0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.5)
 		self.rnn_dropout_out = 0.5
@@ -64,10 +64,10 @@ class Parameters():
 		self.epochs = 10
 		self.batch_size = 2
 		self.pin_mem = True
-		self.optim = {"opt": "Adagrad", "lr": 0.0005} # {"opt": "Adam"}
+		self.optim = "Adam" # "Adagrad"
 
 		#load weights
-		self.load_weights = True
+		self.load_weights = False
 		self.load_base_deepvo = False
 		self.load_conv_only = False
 		self.load_model_path = "./models/resnet3d_34_scratch_5_4_2_flow.model.train_0"
