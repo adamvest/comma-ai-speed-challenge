@@ -10,8 +10,8 @@ for split in ["train", "test", "val"]:
         fnames.sort()
 
         for i in range(len(fnames) - 1):
-            img1 = cv2.imread(os.path.join(root, fnames[i]), flags=cv2.IMREAD_GRAYSCALE)
-            img2 = cv2.imread(os.path.join(root, fnames[i + 1]), flags=cv2.IMREAD_GRAYSCALE)
+            img1 = cv2.imread(os.path.join(root, fnames[i]), flags=cv2.IMREAD_GRAYSCALE).T
+            img2 = cv2.imread(os.path.join(root, fnames[i + 1]), flags=cv2.IMREAD_GRAYSCALE).T
             flow = cv2.calcOpticalFlowFarneback(img1, img2, flow=None, pyr_scale=.5,
                 levels=3, winsize=13, iterations=3, poly_n=5, poly_sigma=1.1,
                 flags=cv2.OPTFLOW_FARNEBACK_GAUSSIAN)

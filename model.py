@@ -8,10 +8,16 @@ from params import par
 
 
 """
-Basic 3D Resnet model definition
+3D Resnet model definition
 """
 
 
+"""
+3D Residual Block definition
+
+Inputs:
+feature_maps - number of input and output feature maps for the block
+"""
 class ResidualBlock(nn.Module):
     def __init__(self, feature_maps):
         super(ResidualBlock, self).__init__()
@@ -31,6 +37,18 @@ class ResidualBlock(nn.Module):
         return self.relu(residual + out)
 
 
+"""
+Constructs a level of the Resnet model
+
+Inputs:
+num_blocks - number of residual blocks in level
+in_feature_maps - number of input feature maps for the first block
+    in this level
+out_feature_maps - number of feature maps for every other block in level
+    and the depth of the output of this level
+downsample - whether to learn a residual connection for the first block
+    which performs downsampling
+"""
 class ResidualGroup(nn.Module):
     def __init__(self, num_blocks, in_feature_maps, out_feature_maps, downsample):
         super(ResidualGroup, self).__init__()
@@ -67,11 +85,19 @@ class ResidualGroup(nn.Module):
         return self.base(out)
 
 
+"""
+3D Resnet model definition
+
+Inputs:
+num_blocks - array of size 4 representing the number of residual blocks
+    at each level of the Resnet model
+"""
 class ResNet3D(nn.Module):
     def __init__(self, num_blocks):
         super(ResNet3D, self).__init__()
         assert(len(num_blocks) == 4)
 
+        #initial convolutional block
         layers = [nn.Sequential(
                 nn.Conv3d(par.num_channels, 64, kernel_size=(7, 7, 7), stride=(1, 2, 2), padding=3),
                 nn.BatchNorm3d(64),
@@ -79,6 +105,7 @@ class ResNet3D(nn.Module):
                 nn.MaxPool3d(kernel_size=(3, 3, 3), stride=2, padding=1)
             )]
 
+        #construct residual layers
         for i in range(len(num_blocks)):
             in_feature_maps, out_feature_maps, downsample = 2 ** (i + 5), 2 ** (i + 6), True
 
@@ -96,6 +123,7 @@ class ResNet3D(nn.Module):
         tmp = Variable(torch.zeros(1, par.num_channels, par.seq_len, par.img_h, par.img_w))
         linear_input_size = int(np.prod(self._extract_features(tmp).size()))
 
+        #define classification head
         self.linear = nn.Sequential(
                 nn.Linear(linear_input_size, par.linear_size),
                 nn.BatchNorm1d(par.linear_size),
@@ -138,8 +166,19 @@ Deep VO model definition
 """
 
 
-def conv(batchNorm, in_feature_maps, out_feature_maps, kernel_size=3, stride=1, dropout=0):
-    if batchNorm:
+"""
+FlowNet convolutional block definition
+
+Inputs:
+batch_norm - whether to perform batch normalization
+in_feature_maps - number of input feature maps to conv block
+out_feature_maps - number of output feature maps from conv block
+kernel_size - kernel size used to perform convolution
+stride - stride used to perform convolution
+dropout - dropout percentage
+"""
+def conv(batch_norm, in_feature_maps, out_feature_maps, kernel_size=3, stride=1, dropout=0):
+    if batch_norm:
         return nn.Sequential(
             nn.Conv2d(in_feature_maps, out_feature_maps, kernel_size=kernel_size,
                 stride=stride, padding=(kernel_size - 1) // 2, bias=False),
@@ -156,6 +195,14 @@ def conv(batchNorm, in_feature_maps, out_feature_maps, kernel_size=3, stride=1, 
         )
 
 
+"""
+Modified DeepVO architecture utilizing base model and new classifier head
+
+Inputs:
+h - height of the input frames
+w - width of the input frames
+batch_norm - whether to perform batch normalization
+"""
 class DeepVO(nn.Module):
     def __init__(self, h, w, batch_norm=True):
         super(DeepVO,self).__init__()
@@ -192,20 +239,28 @@ class DeepVO(nn.Module):
         return self.forward(x).squeeze()
 
 
-class BaseDeepVO(nn.Module):
-    def __init__(self, h, w, batchNorm):
-        super(BaseDeepVO,self).__init__()
-        self.batchNorm = batchNorm
+"""
+Base DeepVO model definition (conv + lstm)
 
-        self.conv1 = conv(self.batchNorm, par.num_channels, 64, kernel_size=7, stride=2, dropout=par.conv_dropout[0])
-        self.conv2 = conv(self.batchNorm, 64, 128, kernel_size=5, stride=2, dropout=par.conv_dropout[1])
-        self.conv3 = conv(self.batchNorm, 128, 256, kernel_size=5, stride=2, dropout=par.conv_dropout[2])
-        self.conv3_1 = conv(self.batchNorm, 256, 256, kernel_size=3, stride=1, dropout=par.conv_dropout[3])
-        self.conv4 = conv(self.batchNorm, 256, 512, kernel_size=3, stride=2, dropout=par.conv_dropout[4])
-        self.conv4_1 = conv(self.batchNorm, 512, 512, kernel_size=3, stride=1, dropout=par.conv_dropout[5])
-        self.conv5 = conv(self.batchNorm, 512, 512, kernel_size=3, stride=2, dropout=par.conv_dropout[6])
-        self.conv5_1 = conv(self.batchNorm, 512, 512, kernel_size=3, stride=1, dropout=par.conv_dropout[7])
-        self.conv6 = conv(self.batchNorm, 512, 1024, kernel_size=3, stride=2, dropout=par.conv_dropout[8])
+Inputs:
+h - height of the input frames
+w - width of the input frames
+batch_norm - whether to perform batch normalization
+"""
+class BaseDeepVO(nn.Module):
+    def __init__(self, h, w, batch_norm):
+        super(BaseDeepVO,self).__init__()
+        self.batch_norm = batch_norm
+
+        self.conv1 = conv(self.batch_norm, par.num_channels, 64, kernel_size=7, stride=2, dropout=par.conv_dropout[0])
+        self.conv2 = conv(self.batch_norm, 64, 128, kernel_size=5, stride=2, dropout=par.conv_dropout[1])
+        self.conv3 = conv(self.batch_norm, 128, 256, kernel_size=5, stride=2, dropout=par.conv_dropout[2])
+        self.conv3_1 = conv(self.batch_norm, 256, 256, kernel_size=3, stride=1, dropout=par.conv_dropout[3])
+        self.conv4 = conv(self.batch_norm, 256, 512, kernel_size=3, stride=2, dropout=par.conv_dropout[4])
+        self.conv4_1 = conv(self.batch_norm, 512, 512, kernel_size=3, stride=1, dropout=par.conv_dropout[5])
+        self.conv5 = conv(self.batch_norm, 512, 512, kernel_size=3, stride=2, dropout=par.conv_dropout[6])
+        self.conv5_1 = conv(self.batch_norm, 512, 512, kernel_size=3, stride=1, dropout=par.conv_dropout[7])
+        self.conv6 = conv(self.batch_norm, 512, 1024, kernel_size=3, stride=2, dropout=par.conv_dropout[8])
 
         #compute CNN feature extrator output shape
         tmp = Variable(torch.zeros(1, par.num_channels, h, w))
@@ -225,17 +280,18 @@ class BaseDeepVO(nn.Module):
 
             elif isinstance(m, nn.LSTM):
                 # layer 1
-                kaiming_normal_(m.weight_ih_l0)  #orthogonal_(m.weight_ih_l0)
+                kaiming_normal_(m.weight_ih_l0)
                 kaiming_normal_(m.weight_hh_l0)
                 m.bias_ih_l0.data.zero_()
                 m.bias_hh_l0.data.zero_()
+
                 # Set forget gate bias to 1 (remember)
                 n = m.bias_hh_l0.size(0)
                 start, end = n//4, n//2
                 m.bias_hh_l0.data[start:end].fill_(1.)
 
                 # layer 2
-                kaiming_normal_(m.weight_ih_l1)  #orthogonal_(m.weight_ih_l1)
+                kaiming_normal_(m.weight_ih_l1)
                 kaiming_normal_(m.weight_hh_l1)
                 m.bias_ih_l1.data.zero_()
                 m.bias_hh_l1.data.zero_()
@@ -268,6 +324,7 @@ class BaseDeepVO(nn.Module):
         out_conv6 = self.conv6(out_conv5)
         return out_conv6
 
+    #stacks frames from input clip into groups of size 2 or 3
     def stack_frames(self, x):
         if par.use_three_frames:
             seq_list = []

@@ -9,18 +9,34 @@ from torchvision import transforms
 from params import par
 
 
+"""
+Creates a pandas dataframe containing clip information
+
+Inputs:
+split - split name in ["train", "test", "val"]
+seq_len - length of the clip in frames
+overlap - number of shared frames between clips
+
+Outputs:
+data_info - dataframe containing clip information
+"""
 def get_split_info(split, seq_len, overlap):
     assert(overlap < seq_len)
+    assert split in ["train", "test", "val"]
     ids, img_paths, flow_paths, speeds = [], [], [], []
 
     img_fpaths = glob.glob("./data/%s_frames/*.png" % split)
     flow_fpaths = glob.glob("./data/optical_flow/%s_frames/*.npy" % split)
     img_fpaths.sort(key=lambda x: int(x.split("/")[-1].split(".")[0].split("_")[-1]))
     flow_fpaths.sort(key=lambda x: int(x.split("/")[-1].split(".")[0].split("_")[-1]))
-    speeds_file = open("./data/%s.txt" % split)
-    speed_annotations = speeds_file.readlines()
-    speed_annotations = [float(val) for val in speed_annotations]
-    speeds_file.close()
+
+    if split != "test":
+        speeds_file = open("./data/%s.txt" % split)
+        speed_annotations = speeds_file.readlines()
+        speed_annotations = [float(val) for val in speed_annotations]
+        speeds_file.close()
+    else:
+        speed_annotations = [0] * len(img_fpaths)
 
     for i in range(0, len(img_fpaths)-seq_len+1, seq_len-overlap):
         ids.append([i for i in range(i, i+seq_len)])
@@ -41,6 +57,14 @@ def get_split_info(split, seq_len, overlap):
     return pd.DataFrame(data, columns=list(data.keys())), len(img_fpaths)
 
 
+"""
+Pytorch random batch sampler
+
+Inputs:
+info_dataframe - pandas dataframe used to create dataset
+batch_size - number of clips per batch
+drop_last - whether to keep "incomplete" final batch
+"""
 class RandomBatchSampler(Sampler):
     def __init__(self, info_dataframe, batch_size, drop_last=False):
         self.df = info_dataframe
@@ -66,6 +90,17 @@ class RandomBatchSampler(Sampler):
         return self.len
 
 
+"""
+Pytorch dataset for video clips
+
+Inputs:
+info_dataframe - pandas dataframe used to create dataset
+resize_mode - how to perform resize operation, center crop or interpolation
+new_size - resulting size of the frames after resizing
+img_means - mean of image channels used for normalization
+img_stds - std of image channels used for normalization
+minus_point_5 - whether to normalize to range [-.5, .5] instead of [0, 1]
+"""
 class VideoClipDataset(Dataset):
     def __init__(self, info_dataframe, resize_mode="crop", new_size=None, img_means=None, img_std=(1,1,1), minus_point_5=False):
         img_ops, flow_ops = [], []
@@ -139,6 +174,12 @@ class VideoClipDataset(Dataset):
         return len(self.data_info.index)
 
 
+"""
+Custom transform to apply center crop to a Numpy ndarray
+
+Inputs:
+crop_size - tuple (w, h) to crop the image to
+"""
 class NumpyCenterCrop():
     def __init__(self, crop_size):
         self.crop_size = crop_size
@@ -153,6 +194,9 @@ class NumpyCenterCrop():
             start_y:start_y+self.crop_size[1]]
 
 
+"""
+Custom transform to cast Numpy ndarray to Pytorch Tensor
+"""
 class NumpyToTensor():
     def __init__(self):
         pass

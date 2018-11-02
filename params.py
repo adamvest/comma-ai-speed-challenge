@@ -6,10 +6,10 @@ class Parameters():
 		self.n_processors = 8
 
 		#frame setup
-		self.seq_len = 5
-		self.overlap = 4
+		self.seq_len = 10
+		self.overlap = 7
 		self.check_interval = 1
-		self.use_optical_flow = True
+		self.use_optical_flow = False
 		self.use_both = False
 		self.use_three_frames = False
 		frames = 3 if self.use_three_frames else 2
@@ -31,12 +31,13 @@ class Parameters():
 		elif self.use_optical_flow:
 			input = "flow"
 
-		self.train_data_info_path = "./datainfo/train_df_%d_%d_%d_%s.pickle" \
-			% (self.seq_len, self.overlap, frames, input)
-		self.valid_data_info_path = "./datainfo/valid_df_%d_%d_%d_%s.pickle" \
-			% (self.seq_len, self.overlap, frames, input)
-		self.test_data_info_path = "./datainfo/test_df_%d_%d_%d_%s.pickle" \
-			% (self.seq_len, self.overlap, frames, input)
+		df_path = "./datainfo"
+		self.train_data_info_path = os.path.join(df_path, "train_df_%d_%d_%d_%s.pickle" \
+			% (self.seq_len, self.overlap, frames, input))
+		self.valid_data_info_path = os.path.join(df_path, "valid_df_%d_%d_%d_%s.pickle" \
+			% (self.seq_len, self.overlap, frames, input))
+		self.test_data_info_path = os.path.join(df_path, "test_df_%d_%d_%d_%s.pickle" \
+			% (self.seq_len, self.overlap, frames, input))
 
 		#model
 		self.model = "resnet3d" #deepvo
@@ -67,13 +68,14 @@ class Parameters():
 		self.optim = "Adam" # "Adagrad"
 
 		#load weights
-		self.load_weights = False
+		model_dir = "./models"
+		self.load_weights = True
 		self.load_base_deepvo = False
 		self.load_conv_only = False
-		self.load_model_path = "./models/resnet3d_34_scratch_5_4_2_flow.model.train_0"
+		self.load_model_path = os.path.join(model_dir, "resnet3d_34_scratch_10_7_2_images.model.val_2")
 
 		#testing
-		self.evaluate_val = True
+		self.evaluate_val = False
 
 		#save paths
 		base = "scratch"
@@ -86,13 +88,13 @@ class Parameters():
 
 		model = self.model if self.model == "deepvo" else self.model + "_%d" % self.resnet_depth
 
-		self.save_model_path = "./models/%s_%s_%d_%d_%d_%s.model" \
-			% (model, base, self.seq_len, self.overlap, frames, input)
+		self.save_model_path = os.path.join(model_dir, "%s_%s_%d_%d_%d_%s.model" \
+			% (model, base, self.seq_len, self.overlap, frames, input))
 
-		if not os.path.isdir(os.path.dirname(self.save_model_path)):
-			os.makedirs(os.path.dirname(self.save_model_path))
-		if not os.path.isdir(os.path.dirname(self.train_data_info_path)):
-			os.makedirs(os.path.dirname(self.train_data_info_path))
+		if not os.path.isdir(model_dir):
+			os.makedirs(model_dir)
+		if not os.path.isdir(df_path):
+			os.makedirs(df_path)
 
 
 par = Parameters()

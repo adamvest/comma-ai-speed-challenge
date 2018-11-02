@@ -2,7 +2,7 @@ import os
 import time
 import torch
 import pandas as pd
-from model import DeepVO
+from model import DeepVO, ResNet3D
 from data import get_split_info, VideoClipDataset
 from helper import evaluate_predictions, write_predictions
 from torch.utils.data import DataLoader
@@ -67,7 +67,9 @@ for frame_ids, clip, _ in test_dl:
         running_pred_sums[frame_ids[i]] += predicted_speeds[i]
         pred_counts[frame_ids[i]] += 1
 
-avg_preds = running_pred_sums / pred_counts
+running_pred_sums[-1], running_pred_sums[-2] = running_pred_sums[-3], running_pred_sums[-3]
+pred_counts[-1], pred_counts[-2] = 1, 1
+avg_preds = (running_pred_sums / pred_counts)
 
 #calcuate evaluation metrics
 if split == "val":
@@ -77,4 +79,5 @@ if split == "val":
 
 #write test predictions to file
 else:
+    print("Saving predictions to file...")
     write_predictions(avg_preds, split)

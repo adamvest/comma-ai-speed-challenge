@@ -2,21 +2,25 @@ import torch
 from torch import nn
 from params import par
 
+
+#calculate MSE of model predictions on GT speed data
 def evaluate_predictions(preds, split_name):
-    gt_preds_file = open("./data/%s.txt" % split_name, "r")
-    gt_preds = gt_preds_file.readlines()
-    gt_preds = [float(pred) for pred in gt_preds]
-    gt_preds = torch.FloatTensor(gt_preds)
-    gt_preds_file.close()
-    return torch.nn.functional.mse_loss(preds, gt_preds).data.numpy()
+    gt_speeds_file = open("./data/%s.txt" % split_name, "r")
+    gt_speeds = gt_speeds_file.readlines()
+    gt_speeds = [float(pred) for pred in gt_speeds]
+    gt_speeds = torch.FloatTensor(gt_speeds)
+    gt_speeds_file.close()
+    return torch.mean((preds - gt_speeds) ** 2)
 
 
+#store evaluation predictions in text file
 def write_predictions(preds, split_name):
     with open("./data/%s.txt" % split_name, "w") as preds_file:
-        for pred in preds:
-            f.write(str(pred) + "\n")
+        for pred in preds.data:
+            preds_file.write("%f\n" % float(pred))
 
 
+#weight initialization for 3D Resnet model
 def initialize_weights(resnet):
     for m in resnet.modules():
         if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear):
@@ -30,6 +34,7 @@ def initialize_weights(resnet):
             m.bias.data.zero_()
 
 
+#load pretrained weights, excluding necessary layers for finetuning
 def load_weights(model):
     pretrained_dict = torch.load(par.load_model_path)
 

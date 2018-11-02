@@ -1,0 +1,32 @@
+Create new data info
+Number of samples in training dataset: 16301
+Number of samples in validation dataset: 4061
+
+Moving model to GPU...
+
+Begin training model...
+
+
+Epoch 1 Training Time: 122 minutes 59 seconds
+Mean MSE Loss: 66.182
+
+Epoch 1 Validation Time: 9 minutes 55 seconds
+Mean MSE Loss: 449.959
+
+Save model at epoch 1, mean of valid loss: 449.959
+Save model at epoch 1, mean of train loss: 66.182
+
+Epoch 2 Training Time: 118 minutes 0 seconds
+Mean MSE Loss: 63.552
+
+Epoch 2 Validation Time: 9 minutes 42 seconds
+Mean MSE Loss: 139.134
+
+Save model at epoch 2, mean of valid loss: 139.134
+Save model at epoch 2, mean of train loss: 63.552
+Traceback (most recent call last):
+  File "main.py", line 85, in <module>
+    loss = model.step(clips, speeds, optimizer).data.cpu().numpy()
+  File "/local-scratch/avest/lib/python3.5/site-packages/torch/utils/data/dataloader.py", line 228, in handler
+    _error_if_any_worker_fails()
+RuntimeError: DataLoader worker (pid 11693) is killed by signal: Terminated. Details are lost due to multiprocessing. Rerunning with num_workers=0 may give better error trace.
