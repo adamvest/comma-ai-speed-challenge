@@ -221,7 +221,7 @@ class DeepVO(nn.Module):
 
     def get_loss(self, x, y):
         pred_speeds = self.predict(x)
-        loss = torch.nn.functional.mse_loss(pred_speeds, y)
+        loss = torch.nn.functional.mse_loss(pred_speeds, y.squeeze())
         return loss
 
     def step(self, x, y, optimizer):

@@ -54,6 +54,7 @@ model.eval()
 
 #process clips
 for frame_ids, clip, _ in test_dl:
+    print(frame_ids.shape)
     if use_cuda:
         clip = clip.cuda(non_blocking=par.pin_mem)
 

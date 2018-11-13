@@ -1,0 +1,88 @@
+Load data info from ./datainfo/train_df_60_40_3_flow.pickle
+Number of samples in training dataset: 814
+Number of samples in validation dataset: 202
+
+Moving model to GPU...
+
+Begin training model...
+
+
+Epoch 1 Training Time: 26 minutes 17 seconds
+Mean MSE Loss: 161.174
+
+Epoch 1 Validation Time: 4 minutes 1 seconds
+Mean MSE Loss: 567.358
+
+Save model at epoch 1, mean of valid loss: 567.358
+Save model at epoch 1, mean of train loss: 161.174
+
+Epoch 2 Training Time: 28 minutes 0 seconds
+Mean MSE Loss: 78.401
+
+Epoch 2 Validation Time: 4 minutes 1 seconds
+Mean MSE Loss: 206.667
+
+Save model at epoch 2, mean of valid loss: 206.667
+Save model at epoch 2, mean of train loss: 78.401
+
+Epoch 3 Training Time: 28 minutes 0 seconds
+Mean MSE Loss: 64.271
+
+Epoch 3 Validation Time: 4 minutes 1 seconds
+Mean MSE Loss: 1423.541
+
+Save model at epoch 3, mean of train loss: 64.271
+
+Epoch 4 Training Time: 26 minutes 22 seconds
+Mean MSE Loss: 63.572
+
+Epoch 4 Validation Time: 3 minutes 57 seconds
+Mean MSE Loss: 564.748
+
+Save model at epoch 4, mean of train loss: 63.572
+
+Epoch 5 Training Time: 26 minutes 17 seconds
+Mean MSE Loss: 62.905
+
+Epoch 5 Validation Time: 3 minutes 58 seconds
+Mean MSE Loss: 423.915
+
+Save model at epoch 5, mean of train loss: 62.905
+
+Epoch 6 Training Time: 26 minutes 9 seconds
+Mean MSE Loss: 65.080
+
+Epoch 6 Validation Time: 3 minutes 54 seconds
+Mean MSE Loss: 6798.609
+
+
+Epoch 7 Training Time: 25 minutes 26 seconds
+Mean MSE Loss: 65.378
+
+Epoch 7 Validation Time: 4 minutes 2 seconds
+Mean MSE Loss: 127.022
+
+Save model at epoch 7, mean of valid loss: 127.022
+
+Epoch 8 Training Time: 26 minutes 10 seconds
+Mean MSE Loss: 64.055
+
+Epoch 8 Validation Time: 4 minutes 6 seconds
+Mean MSE Loss: 158.499
+
+
+Epoch 9 Training Time: 27 minutes 10 seconds
+Mean MSE Loss: 63.715
+
+Epoch 9 Validation Time: 3 minutes 54 seconds
+Mean MSE Loss: 96.628
+
+Save model at epoch 9, mean of valid loss: 96.628
+
+Epoch 10 Training Time: 26 minutes 3 seconds
+Mean MSE Loss: 64.227
+
+Epoch 10 Validation Time: 4 minutes 0 seconds
+Mean MSE Loss: 34.754
+
+Save model at epoch 10, mean of valid loss: 34.754

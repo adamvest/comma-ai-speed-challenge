@@ -1,3 +1,4 @@
+import cv2
 import glob
 import torch
 import numpy as np
@@ -110,9 +111,7 @@ class VideoClipDataset(Dataset):
             flow_ops.append(NumpyCenterCrop((new_size[0], new_size[1])))
         elif resize_mode == "rescale":
             img_ops.append(transforms.Resize((new_size[0], new_size[1])))
-
-            if par.use_both or par.use_optical_flow:
-                raise ValueError("Cannot resize optical flow image")
+            flow_ops.append(NumpyResize((new_size[0], new_size[1])))
 
         img_ops.append(transforms.ToTensor())
         flow_ops.append(NumpyToTensor())
@@ -192,6 +191,18 @@ class NumpyCenterCrop():
         start_y = (h // 2) - self.delta_y
         return arr[:, start_x:start_x+self.crop_size[0],
             start_y:start_y+self.crop_size[1]]
+
+
+"""
+Resize the given numpy array channel by channel using the given interpolation method
+"""
+class NumpyResize():
+    def __init__(self, new_size):
+        self.new_size = new_size[::-1]
+
+    def __call__(self, arr):
+        arrs = [cv2.resize(arr[i, :, :], self.new_size, interpolation=cv2.INTER_CUBIC) for i in range(arr.shape[0])]
+        return np.stack(arrs)
 
 
 """
