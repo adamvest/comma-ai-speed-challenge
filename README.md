@@ -9,7 +9,7 @@ The models implemented in this repository are a 3D Resnet and DeepVO. The DeepVO
 Each of the models utilized in this project take sequences of frames as input. Observing that the difference between frames is a good indicator of speed, I implemented the ability to train each model on optical flow as well as raw images.
 
 ### Conclusions
-Though the DeepVO model tended to improve when optical flow was used, 3D Resnet results were roughly the same. Additionally, Resnet3D-34 performed best of any model tested. The DeepVO model, however, is faster and capable of running in real-time whereas Resnet3D-34 runs at about 10 fps.
+Though the DeepVO model tended to improve when optical flow was used, 3D Resnet results were roughly the same. Additionally, Resnet3D-34 performed best of any model tested. The DeepVO model, however, is faster and capable of running in real-time whereas Resnet3D-34 runs at about 10 fps. Additionally, improved performance was obtained by utilizing clips of larger size, allowing the model to gain a better understanding of how a vehicle's speed changes over time.
 
 ## Requirements
 For models:
